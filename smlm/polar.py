@@ -5,7 +5,7 @@ import math
 
 import matplotlib.pyplot as plt
 
-import smlm.voronoi as voronoi
+from . import voronoi
 
 
 def to_polar(points, new_center: tuple = (0, 0), angle_offset: float = 0.0):

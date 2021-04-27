@@ -3,8 +3,8 @@ import pathlib as pl
 import pandas as pd
 import scipy.spatial as spat
 
-import smlm.analysis as analysis
-import smlm.clustering as cluster
+from . import analysis as analysis
+from . import clustering as cluster
 
 
 class Orte(object):

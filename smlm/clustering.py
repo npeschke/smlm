@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-import smlm.analysis as san
+from . import analysis as san
 
 
 def get_cluster_sizes(clusterer: hdbscan.HDBSCAN):
