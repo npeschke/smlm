@@ -15,14 +15,15 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
                          plot_label: str, method_label: str,
                          n_stages: int,
                          min_density: float = 1e-4, max_density: float = 1e0,
-                         size: float = 5.0, dpi: int = 300):
+                         size: float = 5.0, dpi: int = 300,
+                         stat: str = "probability"):
     fig, ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
     # data = data.loc[data[method] == 1]
     data = data.astype({method: str})
     ax = sns.histplot(x=plot_col, hue=method, data=data,
                       log_scale=(True, False),
                       hue_order=[str(i) for i in range(1, n_stages + 1)],
-                      fill=False, element="step", stat="probability", common_norm=False, common_bins=False,
+                      fill=False, element="step", stat=stat, common_norm=False, common_bins=False,
                       ax=ax)
 
     ax.set_xlabel(plot_label)
