@@ -11,25 +11,25 @@ def get_n_stages(method_name: str, stage_df: pd.DataFrame):
 #     return data[[method]].nunique()
 
 
-def plot_stage_density(density_col: str, method: str, data: pd.DataFrame,
-                       density_display: str, method_display: str,
-                       n_stages: int,
-                       min_density: float = 1e-4, max_density: float = 1e0,
-                       size: float = 5.0, dpi: int = 300):
+def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
+                         plot_label: str, method_label: str,
+                         n_stages: int,
+                         min_density: float = 1e-4, max_density: float = 1e0,
+                         size: float = 5.0, dpi: int = 300):
     fig, ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
     # data = data.loc[data[method] == 1]
     data = data.astype({method: str})
-    ax = sns.histplot(x=density_col, hue=method, data=data,
+    ax = sns.histplot(x=plot_col, hue=method, data=data,
                       log_scale=(True, False),
                       hue_order=[str(i) for i in range(1, n_stages + 1)],
                       fill=False, element="step", stat="probability", common_norm=False, common_bins=False,
                       ax=ax)
 
-    ax.set_xlabel(density_display)
+    ax.set_xlabel(plot_label)
     ax.set_xlim(min_density, max_density)
     ax.legend_.set_title("Stage")
 
-    fig.suptitle(method_display)
+    fig.suptitle(method_label)
 
     return fig, ax
 
