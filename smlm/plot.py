@@ -45,14 +45,14 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
     figure_base_size = 6.5
     # bins = 100
 
-    color_vmin = 3e-5
+    color_vmin = 1e-5
     color_vmax = 3e-4
 
     # cmap = sns.color_palette("viridis", as_cmap=True)
     cmap = cmasher.chroma
 
     voronoi_density_lims = (1e-4, 1e0)
-    radius_lims = (0, 7000)
+    radius_lims = (0, 8000)
 
     joint_fig, joint_ax = plt.subplots(nrows=joint_rows, ncols=joint_columns,
                                        figsize=(joint_columns * figure_base_size * 1.2, joint_rows * figure_base_size),
