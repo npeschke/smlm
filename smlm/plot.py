@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+import cmasher
+
 
 def get_n_stages(method_name: str, stage_df: pd.DataFrame):
     return len(stage_df[method_name].unique())
@@ -42,11 +44,14 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
     figure_base_size = 6.5
     # bins = 100
 
-    color_vmin = 5e-6
-    color_vmax = 1e-4
+    color_vmin = 3e-5
+    color_vmax = 3e-4
+
+    # cmap = sns.color_palette("viridis", as_cmap=True)
+    cmap = cmasher.chroma
 
     voronoi_density_lims = (1e-4, 1e0)
-    radius_lims = (0, 12000)
+    radius_lims = (0, 7000)
 
     joint_fig, joint_ax = plt.subplots(nrows=joint_rows, ncols=joint_columns,
                                        figsize=(joint_columns * figure_base_size * 1.2, joint_rows * figure_base_size),
@@ -57,7 +62,7 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
         with sns.axes_style("white"):
             joint_ax[stage_idx][0] = sns.histplot(x="x", y="y", data=data.loc[data.file == cells_to_plot[stage_idx]],
                                                   ax=joint_ax[stage_idx][0],
-                                                  stat="density", cmap=sns.color_palette("viridis", as_cmap=True),
+                                                  stat="density", cmap=cmap,
                                                   binwidth=20, pthresh=0.37)
 
             joint_ax[stage_idx][0].set_frame_on(False)
@@ -74,7 +79,7 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
                                               log_scale=(True, False),
                                               cbar=True,
                                               stat="probability",
-                                              cmap=sns.color_palette("viridis", as_cmap=True),
+                                              cmap=cmap,
                                               vmin=color_vmin, vmax=color_vmax, thresh=color_vmin)
         joint_ax[stage_idx][2].set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
         joint_ax[stage_idx][2].set_ylabel("Radius [nm]")
