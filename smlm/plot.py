@@ -1,3 +1,4 @@
+import matplotlib.axes
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -62,8 +63,8 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
         with sns.axes_style("white"):
             joint_ax[stage_idx][0] = sns.histplot(x="x", y="y", data=data.loc[data.file == cells_to_plot[stage_idx]],
                                                   ax=joint_ax[stage_idx][0],
-                                                  stat="density", cmap=cmap,
-                                                  binwidth=20, pthresh=0.37)
+                                                  stat="density", cmap=cmasher.ember,
+                                                  binwidth=30, pthresh=0.10)
 
             joint_ax[stage_idx][0].set_frame_on(False)
             joint_ax[stage_idx][0].set_xticks([])
