@@ -20,3 +20,8 @@ def get_tissue_label(s: pd.Series):
         label += "neg."
 
     return label
+
+
+def stage_combination(n_stages: int):
+    for first_stage in range(1, n_stages):
+        yield first_stage, first_stage + 1
