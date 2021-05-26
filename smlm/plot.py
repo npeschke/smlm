@@ -92,3 +92,16 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
     joint_fig.suptitle(method_display)
     joint_fig.tight_layout()
     return joint_fig
+
+
+def plot_localization_counts(loc_label, method, method_label, data, size, dpi):
+    loc_count_fig, loc_count_ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
+    sns.boxplot(x=method, y=loc_label, data=data, ax=loc_count_ax)
+
+    loc_count_ax.set_ylabel("Number of Localizations")
+    loc_count_ax.set_xlabel("Stage")
+    loc_count_ax.set_title(f"Localization counts for {method_label}")
+
+    loc_count_fig.tight_layout()
+
+    return loc_count_fig, loc_count_ax
