@@ -31,3 +31,17 @@ def wilcoxon_rank_sums(comparison_column: str, n_stages: int, stage_method: str,
                          "statistic": statistics,
                          "p_val": p_vals,
                          "q_val": q_vals})
+
+
+def localization_counts(localizations: pd.DataFrame, stages: pd.DataFrame,
+                        file_label: str, n_loc_label: str,
+                        method: str) -> (pd.DataFrame, pd.DataFrame):
+
+    counts = localizations.value_counts(subset=[file_label], sort=False)
+    counts.name = n_loc_label
+
+    counts = counts.reset_index().set_index(file_label)
+
+    count_stages = stages.set_index(file_label).join(counts, on=file_label).reset_index()
+
+    return count_stages.groupby(method)[n_loc_label].describe(), count_stages
