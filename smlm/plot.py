@@ -94,6 +94,63 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
     return joint_fig
 
 
+def plot_binary_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cells_to_plot: list, labelling: str, method_display: str, dpi: int = 300):
+    joint_columns = 3
+    joint_rows = 2
+
+    figure_base_size = 6.5
+    # bins = 100
+
+    color_vmin = 1e-5
+    color_vmax = 3e-4
+
+    # cmap = sns.color_palette("viridis", as_cmap=True)
+    cmap = cmasher.chroma
+
+    voronoi_density_lims = (1e-4, 1e0)
+    radius_lims = (0, 8000)
+
+    joint_fig, joint_ax = plt.subplots(nrows=joint_rows, ncols=joint_columns,
+                                       figsize=(joint_columns * figure_base_size * 1.2, joint_rows * figure_base_size),
+                                       sharex="col", sharey="col", dpi=dpi)
+    for stage_idx in range(joint_rows):
+        stage_cells = data.loc[data[method] == bool(stage_idx)]
+
+        # with sns.axes_style("white"):
+        #     joint_ax[stage_idx][0] = sns.histplot(x="x", y="y", data=data.loc[data.file == cells_to_plot[stage_idx]],
+        #                                           ax=joint_ax[stage_idx][0],
+        #                                           stat="density", cmap=cmasher.ember,
+        #                                           binwidth=30, pthresh=0.10)
+        #
+        #     joint_ax[stage_idx][0].set_frame_on(False)
+        #     joint_ax[stage_idx][0].set_xticks([])
+        joint_ax[stage_idx][0].set_ylabel(f"{bool(stage_idx)} (# Cells = {len(stage_df.loc[(stage_df.labelling == labelling) & (stage_df[method] == bool(stage_idx))])})")
+
+        joint_ax[stage_idx][1] = sns.histplot(x="density", data=stage_cells, ax=joint_ax[stage_idx][1],
+                                              log_scale=(True, False),
+                                              fill=False, element="step", stat="probability")
+        joint_ax[stage_idx][1].set_xlim(*voronoi_density_lims)
+        joint_ax[stage_idx][1].set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
+
+        joint_ax[stage_idx][2] = sns.histplot(x="density", y="r", data=stage_cells, ax=joint_ax[stage_idx][2],
+                                              log_scale=(True, False),
+                                              cbar=True,
+                                              stat="probability",
+                                              cmap=cmap,
+                                              vmin=color_vmin, vmax=color_vmax, thresh=color_vmin)
+        joint_ax[stage_idx][2].set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
+        joint_ax[stage_idx][2].set_ylabel("Radius [nm]")
+        joint_ax[stage_idx][2].set_xlim(*voronoi_density_lims)
+        joint_ax[stage_idx][2].set_ylim(*radius_lims)
+    joint_ax[0][0].set_title("Example Nucleus")
+    joint_ax[0][1].set_title("Density Distribution")
+    joint_ax[0][2].set_title("Radius/Density\nDistribution")
+    joint_ax[0][0].set_yticks([])
+    joint_fig.suptitle(method_display)
+    joint_fig.tight_layout()
+    return joint_fig
+
+
 def plot_localization_counts(loc_label, method, method_label, data, size, dpi):
     loc_count_fig, loc_count_ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
     sns.boxplot(x=method, y=loc_label, data=data, ax=loc_count_ax)
