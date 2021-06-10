@@ -36,7 +36,6 @@ def wilcoxon_rank_sums(comparison_column: str, n_stages: int, stage_method: str,
 def localization_counts(localizations: pd.DataFrame, stages: pd.DataFrame,
                         file_label: str, n_loc_label: str,
                         method: str) -> (pd.DataFrame, pd.DataFrame):
-
     counts = localizations.value_counts(subset=[file_label], sort=False)
     counts.name = n_loc_label
 
@@ -45,3 +44,13 @@ def localization_counts(localizations: pd.DataFrame, stages: pd.DataFrame,
     count_stages = stages.set_index(file_label).join(counts, on=file_label).reset_index()
 
     return count_stages.groupby(method)[n_loc_label].describe(), count_stages
+
+
+def describe_hist_distribution(data: pd.DataFrame, desc_col: str, group: str = None) -> pd.DataFrame:
+    if group is not None:
+        result = data.groupby(group)[desc_col].describe()
+
+    else:
+        result = data[desc_col].describe()
+
+    return result
