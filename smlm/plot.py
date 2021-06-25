@@ -26,6 +26,7 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
     ax = sns.histplot(x=plot_col, hue=method, data=data,
                       log_scale=(True, False),
                       hue_order=[str(i) for i in range(1, n_stages + 1)],
+                      palette=smlm_config.STAGE_CMAP,
                       fill=False, element="step", stat=stat, common_norm=False, common_bins=False,
                       ax=ax)
 
