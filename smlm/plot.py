@@ -19,7 +19,7 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
                          n_stages: int,
                          min_density: float = 1e-4, max_density: float = 1e0,
                          size: float = 5.0, dpi: int = 300,
-                         stat: str = "probability"):
+                         stat: str = "density"):
     fig, ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
     # data = data.loc[data[method] == 1]
     data = data.astype({method: str})
@@ -47,7 +47,7 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
     # bins = 100
 
     color_vmin = 1e-5
-    color_vmax = 3e-4
+    color_vmax = 8e-4
 
     # cmap = sns.color_palette("viridis", as_cmap=True)
     cmap = cmasher.chroma
@@ -73,7 +73,7 @@ def plot_joint_fig(method: str, data: pd.DataFrame, stage_df: pd.DataFrame, cell
 
         joint_ax[stage_idx][1] = sns.histplot(x="density", data=stage_cells, ax=joint_ax[stage_idx][1],
                                               log_scale=(True, False),
-                                              fill=False, element="step", stat="probability")
+                                              fill=False, element="step", stat="density")
         joint_ax[stage_idx][1].set_xlim(*voronoi_density_lims)
         joint_ax[stage_idx][1].set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
 
@@ -200,7 +200,7 @@ def plot_r_density_dist(data: pd.DataFrame, density_lim: tuple, radius_lim: tupl
     ax = sns.histplot(x="density", y="r", data=data, ax=ax,
                       log_scale=(True, False),
                       cbar=True,
-                      stat="probability",
+                      stat="density",
                       cmap=smlm_config.SEQ_CMAP,
                       vmin=cbar_min, vmax=cbar_max, thresh=cbar_min)
     ax.set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
