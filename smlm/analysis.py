@@ -22,13 +22,17 @@ def analyze_orte(orte: pd.DataFrame):
     # orte = load_orte(orte_path)
     points = np.array([orte.x, orte.y]).T
     voronoi_density = vor.get_voronoi_density(points)
+    norm_voroonoi_density = voronoi_density / len(voronoi_density)
     log_voronoi_density = np.log10(voronoi_density)
+    log_norm_voronoi_density = np.log10(norm_voroonoi_density)
     center_of_mass = pol.center_of_mass(points)
     polar_points = pol.to_polar(points, new_center=center_of_mass, angle_offset=0)
     orte.insert(5, "r", polar_points[:, 0])
     orte.insert(6, "phi", polar_points[:, 1])
     orte.insert(7, "density", voronoi_density)
-    orte.insert(8, "log_density", log_voronoi_density)
+    orte.insert(8, "norm_density", norm_voroonoi_density)
+    orte.insert(9, "log_density", log_voronoi_density)
+    orte.insert(10, "log_norm_density", log_norm_voronoi_density)
 
     return orte.dropna()
 

@@ -1,6 +1,7 @@
 import textwrap as tw
 
 import cmasher
+import pathlib as pl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -241,7 +242,7 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
         stages = _get_stages(bg_plot_data, stage_method)
 
     for stage in stages:
-        for file in _get_stage_file_names(bg_plot_data, stage, stage_method):
+        for file in get_stage_file_names(bg_plot_data, stage, stage_method):
             ax = _plot_cell_density_hist(data=bg_plot_data, plot_col=plot_col,
                                          file=file, stage=stage, ax=ax,
                                          color=_get_tint(smlm_config.STAGE_COLORS[stage - 1]),
@@ -259,6 +260,7 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
                                  color=smlm_config.STAGE_COLORS[fg_stage - 1],
                                  max_density=max_density, min_density=min_density,
                                  stage_method=stage_method, stat=stat,
+                                 linewidth=4,
                                  **kwargs)
 
     return ax
@@ -286,14 +288,80 @@ def _get_tint(hex_str: str):
     return f"#{tint_hex_str}"
 
 
-def _get_stage_file_names(data: pd.DataFrame, stage: int, stage_method: str):
-    file_names = data.loc[data[stage_method] == stage].file.unique()
+def get_stage_file_names(data: pd.DataFrame, stage, stage_method: str):
+    if type(stage) is int:
+        stage = (stage,)
+    file_names = data.loc[data[stage_method].isin(stage)].file.unique()
     return tuple(file_names)
 
 
 def _get_stages(data: pd.DataFrame, stage_method: str):
     stages = data[stage_method].unique()
     return tuple(stages)
+
+
+def plot_cell_vis(data: pd.DataFrame, filename: str, plot_col: str, ax: plt.Axes, density_lims: tuple, log_density_threshold: float = -2):
+    plot_data = data.loc[data.file == filename]
+
+    with sns.axes_style("white"):
+        # sns.histplot(x="x", y="y", data=plot_data.loc[plot_data.log_density < log_density_threshold],
+        #              ax=ax,
+        #              stat="count", cmap=smlm_config.SEQ_CMAP,
+        #              cbar=True,
+        #              binwidth=30,
+        #              pthresh=0.10, pmax=0.95)
+
+        # sns.kdeplot(x="x", y="y", data=plot_data.loc[plot_data.log_density < log_density_threshold],
+        #             fill=True)
+
+        plot_scatter_localizations(plot_data.loc[plot_data.log_density < log_density_threshold], ax, plot_col, density_lims=density_lims, alpha=0.2)
+        plot_scatter_localizations(plot_data.loc[plot_data.log_density >= log_density_threshold], ax, plot_col, density_lims=density_lims, alpha=1)
+
+        ax.set_frame_on(False)
+        ax.set_xticks([])
+
+
+def plot_scatter_localizations(data, ax, plot_col, density_lims: tuple, **kwargs):
+    alpha = 1
+    if "alpha" in kwargs:
+        alpha = kwargs["alpha"]
+
+    sns.scatterplot(x="x", y="y", hue=plot_col,
+                    data=data,
+                    marker="2",  # edgecolor=None, linewidth=0,
+                    alpha=alpha,
+                    palette=smlm_config.SEQ_CMAP,
+                    hue_norm=density_lims,
+                    ax=ax)
+
+
+def plot_cell_vis_density(data: pd.DataFrame, filename: str, stages: tuple = None, result_dir: pl.Path = pl.Path.cwd()):
+    # plot_col = "log_density"
+    plot_col = "log_norm_density"
+
+    # min_density = -4
+    # max_density = 0
+    min_density = -10
+    max_density = -4
+
+    # vis_density_lims = (-3, -0.5)
+    vis_density_lims = (-8.5, -6.5)
+
+    fig, ax = plt.subplots(ncols=2, figsize=(50, 25), dpi=200)
+
+    plot_cell_vis(data=data, filename=filename, ax=ax[0], density_lims=vis_density_lims, plot_col=plot_col)
+    plot_cell_density_hist(data=data, fg_filename=filename, ax=ax[1],
+                           min_density=min_density, max_density=max_density,
+                           stages=stages, plot_col=plot_col)
+
+    stage = data.loc[data.file == filename].manual_5_stage.unique()
+    assert len(stage) == 1
+    stage = int(stage[0])
+
+    fig.suptitle(f"Stage {stage} Nucleus {filename}")
+    fig.tight_layout()
+    fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
+    return filename
 
 
 if __name__ == '__main__':
