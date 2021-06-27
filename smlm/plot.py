@@ -1,9 +1,12 @@
+import textwrap as tw
+
 import cmasher
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from ..smlm import config as smlm_config
+from smlm.smlm import config as smlm_config
 
 
 def get_n_stages(method_name: str, stage_df: pd.DataFrame):
@@ -222,3 +225,76 @@ def plot_localization_counts(loc_label, method, method_label, data, size, dpi):
     loc_count_fig.tight_layout()
 
     return loc_count_fig, loc_count_ax
+
+
+def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
+                           ax: plt.Axes,
+                           plot_col: str = "log_density", stage_method: str = "manual_5_stage",
+                           stages: tuple = None,
+                           stat: str = "density",
+                           min_density: float = -4, max_density: float = 0,
+                           **kwargs):
+    # Background
+    bg_plot_data = data.loc[data.file != fg_filename]
+
+    if stages is None:
+        stages = _get_stages(bg_plot_data, stage_method)
+
+    for stage in stages:
+        for file in _get_stage_file_names(bg_plot_data, stage, stage_method):
+            ax = _plot_cell_density_hist(data=bg_plot_data, plot_col=plot_col,
+                                         file=file, stage=stage, ax=ax,
+                                         color=_get_tint(smlm_config.STAGE_COLORS[stage - 1]),
+                                         max_density=max_density, min_density=min_density,
+                                         stage_method=stage_method, stat=stat,
+                                         **kwargs)
+
+    # Foreground
+    fg_plot_data = data.loc[data.file == fg_filename]
+    fg_stage = fg_plot_data[stage_method].unique()
+    assert len(fg_stage) == 1
+    fg_stage = fg_stage[0]
+    ax = _plot_cell_density_hist(data=fg_plot_data, plot_col=plot_col,
+                                 file=fg_filename, stage=fg_stage, ax=ax,
+                                 color=smlm_config.STAGE_COLORS[fg_stage - 1],
+                                 max_density=max_density, min_density=min_density,
+                                 stage_method=stage_method, stat=stat,
+                                 **kwargs)
+
+    return ax
+
+
+def _plot_cell_density_hist(data: pd.DataFrame, plot_col: str, file: str, stage: int, ax: plt.Axes,
+                            color: str,
+                            max_density: float, min_density: float,
+                            stage_method: str, stat: str, **kwargs):
+    # data[["file", "manual_5_stage"]].tail()
+    ax = sns.histplot(x=plot_col,
+                      data=data.loc[(data[stage_method] == stage) & (data["file"] == file)],
+                      color=color,
+                      binrange=(min_density, max_density),
+                      fill=False, element="step", stat=stat, common_norm=False, common_bins=False,
+                      ax=ax, **kwargs)
+    return ax
+
+
+def _get_tint(hex_str: str):
+    hex_colors = tw.wrap(hex_str[1:], 2)
+    int_colors = np.array([int(color, 16) for color in hex_colors])
+    tint_colors = np.round(int_colors + (255 - int_colors) * 0.6)
+    tint_hex_str = "".join([format(int(tint_color), "02x") for tint_color in np.nditer(tint_colors)])
+    return f"#{tint_hex_str}"
+
+
+def _get_stage_file_names(data: pd.DataFrame, stage: int, stage_method: str):
+    file_names = data.loc[data[stage_method] == stage].file.unique()
+    return tuple(file_names)
+
+
+def _get_stages(data: pd.DataFrame, stage_method: str):
+    stages = data[stage_method].unique()
+    return tuple(stages)
+
+
+if __name__ == '__main__':
+    _get_tint(smlm_config.STAGE_COLORS[0])

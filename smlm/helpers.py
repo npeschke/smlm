@@ -25,3 +25,13 @@ def get_tissue_label(s: pd.Series):
 def stage_combination(n_stages: int):
     for first_stage in range(1, n_stages):
         yield first_stage, first_stage + 1
+
+
+def merge_localizations_stages(data: pd.DataFrame, stages_df: pd.DataFrame, assure_cols: tuple = None):
+    merged = data.merge(stages_df, on="file", how="left")
+
+    if assure_cols is not None:
+        for col in assure_cols:
+            merged = merged.loc[~merged[col].isna()]
+
+    return merged
