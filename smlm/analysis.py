@@ -25,6 +25,7 @@ def analyze_orte(orte: pd.DataFrame):
     orte.insert(5, "r", polar_points[:, 0])
     orte.insert(6, "phi", polar_points[:, 1])
     orte.insert(7, "density", voronoi_density)
+    orte.insert(8, "log_density", np.log10(voronoi_density))
 
     return orte.dropna()
 
