@@ -10,7 +10,7 @@ from . import clustering as cluster
 class Orte(object):
     def __init__(self, orte_path: pl.Path):
         self.orte_path = orte_path
-        self.orte_df = analysis.load_orte(self.orte_path).sample(46000)
+        self.orte_df = analysis.load_orte(self.orte_path)#.sample(46000)
         self.orte_df = analysis.analyze_orte(self.orte_df)
 
         self.orte_df, self.clusterer, self.cluster_meta = cluster.get_hdbscan_clustering(self.orte_df)
