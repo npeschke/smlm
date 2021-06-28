@@ -1,8 +1,11 @@
+import pathlib as pl
 import textwrap as tw
 
 import cmasher
-import pathlib as pl
+import matplotlib.cm as mpl_cm
+import matplotlib.colors as mpl_col
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mpl_tick
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -37,6 +40,8 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
                       ax=ax)
 
     ax.set_xlabel(plot_label)
+    if stat == "density":
+        ax.set_ylabel("Probability Density Function")
     # ax.set_xlim(min_density, max_density)
     ax.legend_.set_title("Stage")
 
@@ -203,15 +208,91 @@ def plot_r_density_dist_stages(data: pd.DataFrame,
     return fig, ax
 
 
-def plot_r_density_dist(data: pd.DataFrame, density_lim: tuple, radius_lim: tuple, cbar_min: float, cbar_max: float, ax: plt.Axes):
-    ax = sns.histplot(x="density", y="r", data=data, ax=ax,
-                      log_scale=(True, False),
-                      cbar=True,
-                      stat="density",
-                      cmap=smlm_config.SEQ_CMAP,
-                      vmin=cbar_min, vmax=cbar_max, thresh=cbar_min)
-    ax.set_xlabel(r"Voronoi Density $\left[\frac{1}{nm^2}\right]$")
-    ax.set_ylabel("Radius [nm]")
+def _sci_fmt(x, pos):
+    a, b = '{:.2e}'.format(x).split('e')
+    b = int(b)
+    return r'${} \times 10^{{{}}}$'.format(a, b)
+
+
+def plot_r_density_dist_stages_separate(data: pd.DataFrame,
+                                        method: str,
+                                        result_dir: pl.Path,
+                                        plot_col_radius: str = "r",
+                                        plot_label_radius: str = "Radius [nm]",
+                                        plot_col_density: str = "log_norm_density",
+                                        plot_label_density: str = r"Voronoi Density $\left[\frac{1}{nm^2}\right]$",
+                                        dpi: int = 300, ):
+    n_stages = get_n_stages(method, data)
+    separate_dir = result_dir.joinpath("r_density_plots")
+    if not separate_dir.exists():
+        separate_dir.mkdir()
+
+    for stage_idx in range(n_stages):
+        stage = stage_idx + 1
+        fig, ax = plt.subplots(figsize=(smlm_config.FIG_BASE_SIZE, smlm_config.FIG_BASE_SIZE),
+                               dpi=dpi)
+
+        plot_r_density_dist(data=get_stage_data(data, method, stage),
+                            plot_col_density=plot_col_density,
+                            plot_col_radius=plot_col_radius,
+                            density_lim=smlm_config.DENSITY_LIM,
+                            radius_lim=smlm_config.RADIUS_LIM,
+                            cbar_min=smlm_config.CBAR_MIN,
+                            cbar_max=smlm_config.CBAR_MAX,
+                            plot_label_density=plot_label_density,
+                            plot_label_radius=plot_label_radius,
+                            ax=ax)
+
+        fig.tight_layout()
+
+        fig.savefig(separate_dir.joinpath(f"stage_{stage}.png"))
+        # break
+
+    cbar_fig, cbar_ax = plt.subplots(figsize=(smlm_config.FIG_BASE_SIZE, smlm_config.FIG_BASE_SIZE),
+                                     dpi=dpi)
+
+    # cbar_fig.colorbar(
+    #     mpl_cm.ScalarMappable(
+    #         norm=mpl_col.Normalize(
+    #             vmin=smlm_config.CBAR_MIN,
+    #             vmax=smlm_config.CBAR_MAX
+    #         ),
+    #         cmap=smlm_config.SEQ_CMAP
+    #     )
+    # )
+
+    # cbar_ax.yaxis.get_major_formatter().set_scientific(True)
+
+    cbar_fig.colorbar(
+        mpl_cm.ScalarMappable(
+            norm=mpl_col.Normalize(
+                vmin=smlm_config.CBAR_MIN,
+                vmax=smlm_config.CBAR_MAX
+            ),
+            cmap=smlm_config.SEQ_CMAP
+        ),
+        format=mpl_tick.FuncFormatter(_sci_fmt)
+    )
+
+    cbar_fig.savefig(separate_dir.joinpath(f"cbar.svg"))
+
+
+def plot_r_density_dist(data: pd.DataFrame,
+                        density_lim: tuple, radius_lim: tuple,
+                        cbar_min: float, cbar_max: float,
+                        ax: plt.Axes,
+                        plot_col_density: str = "density",
+                        plot_col_radius: str = "r",
+                        plot_label_radius: str = "Radius [nm]",
+                        plot_label_density: str = r"Voronoi Density $\left[\frac{1}{nm^2}\right]$"):
+    sns.histplot(x=plot_col_density, y=plot_col_radius, data=data, ax=ax,
+                 # log_scale=(True, False),
+                 cbar=False,
+                 stat="density",
+                 cmap=smlm_config.SEQ_CMAP,
+                 vmin=cbar_min, vmax=cbar_max, thresh=cbar_min)
+    ax.set_xlabel(plot_label_density)
+    ax.set_ylabel(plot_label_radius)
     ax.set_xlim(*density_lim)
     ax.set_ylim(*radius_lim)
 

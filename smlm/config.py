@@ -36,11 +36,15 @@ SEQ_CMAP = cmasher.chroma
 FIG_BASE_SIZE = 6.5
 
 # Limits
-DENSITY_LIM = (1e-4, 1e0)
+# DENSITY_LIM = (1e-4, 1e0)
+DENSITY_LIM = (-10, -5)
 RADIUS_LIM = (0, 8000)
 
-CBAR_MIN = 1e-5
-CBAR_MAX = 3e-4
+# CBAR_MIN = 1e-5
+CBAR_MIN = 0.00001
+# CBAR_MAX = 3e-4
+CBAR_MAX = 0.001
+
 
 
 
