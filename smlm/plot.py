@@ -24,7 +24,7 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
                          min_density: float = 1e-4, max_density: float = 1e0,
                          size: float = 5.0, dpi: int = 300,
                          stat: str = "density"):
-    fig, ax = plt.subplots(figsize=(size * 1.2, size), dpi=dpi)
+    fig, ax = plt.subplots(figsize=(size * 2, size), dpi=dpi)
     # data = data.loc[data[method] == 1]
     data = data.astype({method: str})
     ax = sns.histplot(x=plot_col, hue=method, data=data,
@@ -39,7 +39,8 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
     # ax.set_xlim(min_density, max_density)
     ax.legend_.set_title("Stage")
 
-    fig.suptitle(method_label)
+    fig.tight_layout()
+    # fig.suptitle(method_label)
 
     return fig, ax
 
