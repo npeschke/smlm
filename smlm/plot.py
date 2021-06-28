@@ -28,14 +28,15 @@ def plot_stage_histogram(plot_col: str, method: str, data: pd.DataFrame,
     # data = data.loc[data[method] == 1]
     data = data.astype({method: str})
     ax = sns.histplot(x=plot_col, hue=method, data=data,
-                      log_scale=(True, False),
+                      # log_scale=(True, False),
                       hue_order=[str(i) for i in range(1, n_stages + 1)],
                       palette=smlm_config.STAGE_CMAP,
+                      binrange=(min_density, max_density),
                       fill=False, element="step", stat=stat, common_norm=False, common_bins=False,
                       ax=ax)
 
     ax.set_xlabel(plot_label)
-    ax.set_xlim(min_density, max_density)
+    # ax.set_xlim(min_density, max_density)
     ax.legend_.set_title("Stage")
 
     fig.suptitle(method_label)
@@ -335,17 +336,22 @@ def plot_scatter_localizations(data, ax, plot_col, density_lims: tuple, **kwargs
                     ax=ax)
 
 
-def plot_cell_vis_density(data: pd.DataFrame, filename: str, stages: tuple = None, result_dir: pl.Path = pl.Path.cwd()):
+def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, stages: tuple = None, result_dir: pl.Path = pl.Path.cwd()):
     # plot_col = "log_density"
-    plot_col = "log_norm_density"
+    # plot_col = "log_norm_density"
+
+    plot_col = plot_kwargs["plot_col"]
+    min_density = plot_kwargs["min_density"]
+    max_density = plot_kwargs["max_density"]
+    vis_density_lims = plot_kwargs["vis_density_lims"]
 
     # min_density = -4
     # max_density = 0
-    min_density = -10
-    max_density = -4
+    # min_density = -10
+    # max_density = -4
 
     # vis_density_lims = (-3, -0.5)
-    vis_density_lims = (-8.5, -6.5)
+    # vis_density_lims = (-8.5, -6.5)
 
     fig, ax = plt.subplots(ncols=2, figsize=(50, 25), dpi=200)
 
