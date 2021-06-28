@@ -217,6 +217,7 @@ def _sci_fmt(x, pos):
 def plot_r_density_dist_stages_separate(data: pd.DataFrame,
                                         method: str,
                                         result_dir: pl.Path,
+                                        stat: str = "density",
                                         plot_col_radius: str = "r",
                                         plot_label_radius: str = "Radius [nm]",
                                         plot_col_density: str = "log_norm_density",
@@ -241,12 +242,13 @@ def plot_r_density_dist_stages_separate(data: pd.DataFrame,
                             cbar_max=smlm_config.CBAR_MAX,
                             plot_label_density=plot_label_density,
                             plot_label_radius=plot_label_radius,
+                            stat=stat,
                             ax=ax)
 
         fig.tight_layout()
 
         fig.savefig(separate_dir.joinpath(f"stage_{stage}.png"))
-        # break
+        break
 
     cbar_fig, cbar_ax = plt.subplots(figsize=(smlm_config.FIG_BASE_SIZE, smlm_config.FIG_BASE_SIZE),
                                      dpi=dpi)
@@ -263,7 +265,7 @@ def plot_r_density_dist_stages_separate(data: pd.DataFrame,
 
     # cbar_ax.yaxis.get_major_formatter().set_scientific(True)
 
-    cbar_fig.colorbar(
+    cbar = plt.colorbar(
         mpl_cm.ScalarMappable(
             norm=mpl_col.Normalize(
                 vmin=smlm_config.CBAR_MIN,
@@ -271,9 +273,14 @@ def plot_r_density_dist_stages_separate(data: pd.DataFrame,
             ),
             cmap=smlm_config.SEQ_CMAP
         ),
+        ax=cbar_ax,
         format=mpl_tick.FuncFormatter(_sci_fmt)
     )
 
+    # if stat == "density":
+    #     cbar.set_label("Probability Density Function", rotation=270)
+
+    # cbar_fig.tight_layout()
     cbar_fig.savefig(separate_dir.joinpath(f"cbar.svg"))
 
 
@@ -281,6 +288,7 @@ def plot_r_density_dist(data: pd.DataFrame,
                         density_lim: tuple, radius_lim: tuple,
                         cbar_min: float, cbar_max: float,
                         ax: plt.Axes,
+                        stat="density",
                         plot_col_density: str = "density",
                         plot_col_radius: str = "r",
                         plot_label_radius: str = "Radius [nm]",
@@ -288,7 +296,7 @@ def plot_r_density_dist(data: pd.DataFrame,
     sns.histplot(x=plot_col_density, y=plot_col_radius, data=data, ax=ax,
                  # log_scale=(True, False),
                  cbar=False,
-                 stat="density",
+                 stat=stat,
                  cmap=smlm_config.SEQ_CMAP,
                  vmin=cbar_min, vmax=cbar_max, thresh=cbar_min)
     ax.set_xlabel(plot_label_density)
