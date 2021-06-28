@@ -1,12 +1,19 @@
 import seaborn as sns
+import matplotlib as mpl
 import cmasher
+
+sns.set_style("darkgrid")
+sns.set_theme(font="sans-serif")
+
+mpl.rcParams["font.size"] = 14.0
 
 # COLORS
 # SNS_BLUE = (0.12156862745098039, 0.4666666666666667, 0.7058823529411765)
 SNS_BLUE = "#4c72b0"
 
 # APOPTOSIS_RED = (1.0, 0.0, 0.0)
-APOPTOSIS_RED = "#ff0000"
+# APOPTOSIS_RED = "#ff0000"
+APOPTOSIS_RED = "#c44e52"
 
 STAGE1_BLUE = "#1f77b4"
 # STAGE1_BLUE = "#0173B2"
@@ -34,6 +41,8 @@ SEQ_CMAP = cmasher.chroma
 
 # Figure Parameters
 FIG_BASE_SIZE = 6.5
+FIG_TYPE = "svg"
+DPI = 300
 
 # Limits
 # DENSITY_LIM = (1e-4, 1e0)
@@ -44,6 +53,17 @@ RADIUS_LIM = (0, 8000)
 CBAR_MIN = 0.00001
 # CBAR_MAX = 3e-4
 CBAR_MAX = 0.001
+
+
+# Statistics
+HIST_STAT = "density"
+
+# Labels
+STAGE_METHOD = "manual_5_stage"
+TISSUE_HUE = "aCasp3_signal"
+LOG_NORM_DENS_COL = "log_norm_density"
+LOG_NORM_DENS_LABEL = r"$\log_{Voronoi\,Density}\;\left[\log\left(\frac{1}{nm^2}\right)\right]$"
+PDF = "Probability Density Function"
 
 
 

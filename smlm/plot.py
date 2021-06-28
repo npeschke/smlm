@@ -248,7 +248,7 @@ def plot_r_density_dist_stages_separate(data: pd.DataFrame,
         fig.tight_layout()
 
         fig.savefig(separate_dir.joinpath(f"stage_{stage}.png"))
-        break
+        # break
 
     cbar_fig, cbar_ax = plt.subplots(figsize=(smlm_config.FIG_BASE_SIZE, smlm_config.FIG_BASE_SIZE),
                                      dpi=dpi)
