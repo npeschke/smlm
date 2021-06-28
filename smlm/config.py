@@ -21,14 +21,14 @@ STAGE5_PURPLE = "#9467bd"
 # STAGE6_BROWN = "#654321"
 # STAGE_COLORS = [STAGE1_BLUE, STAGE2_MAGENTA, STAGE3_CYAN, STAGE4_RED, STAGE5_PURPLE]
 
-STAGE_COLORS = ["#0173B2", "#CC78BC", "#029e73", "#d62728", "#ca9161"]
+# STAGE_COLORS = ["#0173B2", "#CC78BC", "#029e73", "#d62728", "#ca9161"]
 
 # ['#0173B2', '#DE8F05', '#029E73', '#D55E00', '#CC78BC', '#CA9161', '#FBAFE4', '#949494', '#ECE133', '#56B4E9']
 
 
 # CMAPS
 BIN_CMAP = sns.color_palette([SNS_BLUE, APOPTOSIS_RED])
-STAGE_CMAP = sns.color_palette(STAGE_COLORS)
+STAGE_CMAP = sns.color_palette(n_colors=5)
 
 SEQ_CMAP = cmasher.chroma
 
