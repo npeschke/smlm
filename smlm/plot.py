@@ -428,37 +428,48 @@ def plot_scatter_localizations(data, ax, plot_col, density_lims: tuple, **kwargs
 
 
 def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, stages: tuple = None, result_dir: pl.Path = pl.Path.cwd()):
-    # plot_col = "log_density"
-    # plot_col = "log_norm_density"
+    """
+    Plotting a visualization of the SMLM localizations for a cell
+    together with its Voronoi density histogram on the right side.
+
+    :param data: pd.DataFrame containing the localizations, derived
+                 measurements like density and the grouping column
+    :param filename: filename in data of the cell to plot
+    :param plot_kwargs: Dictionary which needs to include the
+                 following keys:
+
+                 "plot_col": name of the column to plot in the histogram
+                             and to color code the localizations
+                             (e.g. "log_norm_density")
+                 "method":   name of the column in data to group by
+
+                 "hist_density_lims": tuple of the (lower, upper) limit
+                                      of the
+    :param stages: tuple for specifying stages to plot in the background
+                   default: None -> distributions of all nuclei are plotted
+    :param result_dir: pl.Path of the result directory
+    """
 
     plot_col = plot_kwargs["plot_col"]
-    min_density = plot_kwargs["min_density"]
-    max_density = plot_kwargs["max_density"]
+    method_col = plot_kwargs["method"]
+    hist_density_lims = plot_kwargs["hist_density_lims"]
     vis_density_lims = plot_kwargs["vis_density_lims"]
-
-    # min_density = -4
-    # max_density = 0
-    # min_density = -10
-    # max_density = -4
-
-    # vis_density_lims = (-3, -0.5)
-    # vis_density_lims = (-8.5, -6.5)
 
     fig, ax = plt.subplots(ncols=2, figsize=(50, 25), dpi=200)
 
     plot_cell_vis(data=data, filename=filename, ax=ax[0], density_lims=vis_density_lims, plot_col=plot_col)
     plot_cell_density_hist(data=data, fg_filename=filename, ax=ax[1],
-                           min_density=min_density, max_density=max_density,
+                           stage_method=method_col,
+                           density_lims=hist_density_lims,
                            stages=stages, plot_col=plot_col)
 
-    stage = data.loc[data.file == filename].manual_5_stage.unique()
+    stage = data.loc[data.file == filename][method_col].unique()
     assert len(stage) == 1
     stage = int(stage[0])
 
     fig.suptitle(f"Stage {stage} Nucleus {filename}")
     fig.tight_layout()
     fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
-    return filename
 
 
 if __name__ == '__main__':
