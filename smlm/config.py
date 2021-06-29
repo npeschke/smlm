@@ -36,6 +36,7 @@ STAGE5_PURPLE = "#9467bd"
 # CMAPS
 BIN_CMAP = sns.color_palette([SNS_BLUE, APOPTOSIS_RED])
 STAGE_CMAP = sns.color_palette(n_colors=5)
+STAGE_COLORS = STAGE_CMAP.as_hex()
 
 SEQ_CMAP = cmasher.chroma
 
