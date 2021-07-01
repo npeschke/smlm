@@ -530,7 +530,7 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
         vertices = group.iloc[hull.vertices][coordinate_cols].to_numpy()
         polygons.append(vertices)
 
-        cluster_diameters.append(np.sqrt(group.cluster_area.iloc[0] / np.pi))
+        cluster_diameters.append(np.sqrt(group.cluster_area.iloc[0] / np.pi) * 2)
         cluster_areas.append(group.cluster_area.iloc[0])
 
     return polygons, cluster_diameters
