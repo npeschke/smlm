@@ -474,7 +474,9 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
     fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
 
 
-def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes):
+def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes,
+                         color_lims: tuple = None,
+                         cmap=smlm_config.SEQ_CMAP):
     # spat.voronoi_plot_2d
     # return _voronoi_plot_2d(
     #     vor, ax=ax,
@@ -482,15 +484,31 @@ def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes):
     #     point_size=.1,
     # )
 
-    vertices, areas = _get_vertices(orte_df)
+    vertices, diameters = _get_vertices(orte_df)
+
+    if color_lims is None:
+        color_lims = (min(diameters), max(diameters))
+
+    norm = mpl_col.Normalize(*color_lims, clip=False)
+    area_colors = [cmap(norm(area)) for area in diameters]
 
     polygons = mpl_collect.PolyCollection(
         verts=vertices,
-        norm=mpl_col.Normalize(),
-        cmap=smlm_config.SEQ_CMAP,
+        facecolors=area_colors,
+        edgecolors="face",
+        linewidths=0,
     )
 
+    ax_lim = (np.floor(min([min(polygon.flatten()) for polygon in vertices])),
+              np.ceil(max([max(polygon.flatten()) for polygon in vertices])))
+
     ax.add_collection(polygons)
+
+    ax.set_ylim(*ax_lim)
+    ax.set_xlim(*ax_lim)
+
+    ax.figure.colorbar(mpl_cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax)
+    ax.set_aspect("equal")
 
     return ax
 
@@ -515,7 +533,7 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
         cluster_diameters.append(np.sqrt(group.cluster_area.iloc[0] / np.pi))
         cluster_areas.append(group.cluster_area.iloc[0])
 
-    return polygons, cluster_areas
+    return polygons, cluster_diameters
 
 
 if __name__ == '__main__':
@@ -528,10 +546,10 @@ if __name__ == '__main__':
 
     fig, t_ax = plt.subplots(figsize=(30, 30), dpi=200)
     plot_voronoi_patches(test_orte.orte_df, t_ax)
-    lims = (0, 20000)
+    # lims = (0, 20000)
     # ax.autoscale_view()
-    t_ax.set_ylim(lims)
-    t_ax.set_xlim(lims)
+    # t_ax.set_ylim(lims)
+    # t_ax.set_xlim(lims)
     fig.tight_layout()
     fig.show()
 
