@@ -3,11 +3,13 @@ import textwrap as tw
 
 import cmasher
 import matplotlib.cm as mpl_cm
+import matplotlib.collections as mpl_collect
 import matplotlib.colors as mpl_col
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mpl_tick
 import numpy as np
 import pandas as pd
+import scipy.spatial as spat
 import seaborn as sns
 
 from smlm.smlm import config as smlm_config
@@ -472,5 +474,65 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
     fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
 
 
+def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes):
+    # spat.voronoi_plot_2d
+    # return _voronoi_plot_2d(
+    #     vor, ax=ax,
+    #     show_vertices=False,
+    #     point_size=.1,
+    # )
+
+    vertices, areas = _get_vertices(orte_df)
+
+    polygons = mpl_collect.PolyCollection(
+        verts=vertices,
+        norm=mpl_col.Normalize(),
+        cmap=smlm_config.SEQ_CMAP,
+    )
+
+    ax.add_collection(polygons)
+
+    return ax
+
+
+def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple:
+    cluster_diameters = []
+    cluster_areas = []
+    polygons = []
+
+    coordinate_cols = ["x", "y"]
+
+    for group_id, group in orte_df.groupby(group_col):
+        if group_id == -1:
+            continue
+
+        hull = spat.ConvexHull(group[coordinate_cols])
+
+        # vertices = group[coordinate_cols].sort_values(by=coordinate_cols)
+        vertices = group.iloc[hull.vertices][coordinate_cols].to_numpy()
+        polygons.append(vertices)
+
+        cluster_diameters.append(np.sqrt(group.cluster_area.iloc[0] / np.pi))
+        cluster_areas.append(group.cluster_area.iloc[0])
+
+    return polygons, cluster_areas
+
+
 if __name__ == '__main__':
-    _get_tint(smlm_config.STAGE_COLORS[0])
+    # _get_tint(smlm_config.STAGE_COLORS[0])
+    from smlm.smlm.orte import Orte
+
+    localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
+
+    test_orte = Orte(localization_path)
+
+    fig, t_ax = plt.subplots(figsize=(30, 30), dpi=200)
+    plot_voronoi_patches(test_orte.orte_df, t_ax)
+    lims = (0, 20000)
+    # ax.autoscale_view()
+    t_ax.set_ylim(lims)
+    t_ax.set_xlim(lims)
+    fig.tight_layout()
+    fig.show()
+
+

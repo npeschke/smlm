@@ -98,7 +98,11 @@ def run(orte_path: pl.Path):
 
 
 if __name__ == '__main__':
-    localization_path = pl.Path("../data/cut_cells/H2B_mCherry/2020_Nov13_SMLM_from_12th/1_0/merge_filter/cell3_s04_recon_1_0thre_merg_filt_cut.csv")
+    pass
+    # localization_path = pl.Path("../data/cut_cells/H2B_mCherry/2020_Nov13_SMLM_from_12th/1_0/merge_filter/cell3_s04_recon_1_0thre_merg_filt_cut.csv")
     # localization_path = pl.Path("../data/cut_cells/H2B_mCherry/2020_Nov13_SMLM_from_12th/1_0/merge_filter/cell2_s04_recon_1_0thre_merg_filt_cut.csv")
+    # localization_path = pl.Path("../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
 
-    run(localization_path)
+
+
+    # run(localization_path)

@@ -3,22 +3,25 @@ import pathlib as pl
 import pandas as pd
 import scipy.spatial as spat
 
-from . import analysis as analysis
-from . import clustering as cluster
+from smlm.smlm import analysis as analysis
+from smlm.smlm import clustering as cluster
 
 
 class Orte(object):
     def __init__(self, orte_path: pl.Path):
         self.orte_path = orte_path
-        self.orte_df = analysis.load_orte(self.orte_path)#.sample(46000)
-        self.orte_df = analysis.analyze_orte(self.orte_df)
+
+        # TODO Remove debug sample
+        self.orte_df = analysis.load_orte(self.orte_path)#.sample(10000)
+        self.orte_df, self.vor = analysis.analyze_orte(self.orte_df)
 
         self.orte_df, self.clusterer, self.cluster_meta = cluster.get_hdbscan_clustering(self.orte_df)
 
         cluster_density_df = self._get_cluster_density()
 
         self.cluster_meta = self.cluster_meta.join(cluster_density_df.set_index("cluster_id"), how="left")
-        self.orte_df = self.orte_df.set_index("cluster_id").join(cluster_density_df.set_index("cluster_id"), how="left")
+        # self.orte_df = self.orte_df.set_index("cluster_id").join(cluster_density_df.set_index("cluster_id"), how="left")
+        self.orte_df = self.orte_df.merge(cluster_density_df, how="left", on="cluster_id")
 
     def get_named_cluster_meta(self):
         named_cluster_meta = self.cluster_meta.assign(file=self.orte_path.name)
@@ -38,6 +41,6 @@ class Orte(object):
 
 
 if __name__ == '__main__':
-    localization_path = pl.Path("../data/cut_cells/H2B_mCherry/2020_Nov13_SMLM_from_12th/1_0/merge_filter/cell3_s04_recon_1_0thre_merg_filt_cut.csv")
+    localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
     test = Orte(localization_path)
 

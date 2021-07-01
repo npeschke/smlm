@@ -21,7 +21,7 @@ def get_result_dir(orte_path):
 def analyze_orte(orte: pd.DataFrame):
     # orte = load_orte(orte_path)
     points = np.array([orte.x, orte.y]).T
-    voronoi_density = vor.get_voronoi_density(points)
+    voronoi_density, voronoi = vor.get_voronoi_density(points)
     norm_voronoi_density = voronoi_density / len(voronoi_density)
     log_voronoi_density = np.log10(voronoi_density)
     log_norm_voronoi_density = np.log10(norm_voronoi_density)
@@ -34,7 +34,7 @@ def analyze_orte(orte: pd.DataFrame):
     orte.insert(9, "log_density", log_voronoi_density)
     orte.insert(10, "log_norm_density", log_norm_voronoi_density)
 
-    return orte.dropna()
+    return orte.dropna(), voronoi
 
 
 def load_orte(orte_path: pl.Path):

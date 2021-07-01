@@ -131,7 +131,7 @@ def get_voronoi_density(points):
     patches = patches.assign(density=1 / patches.area)
 
     # noinspection PyUnresolvedReferences
-    return patches.reindex(vor.point_region).density.reset_index(drop=True)
+    return patches.reindex(vor.point_region).density.reset_index(drop=True), vor
 
     # 0.5 * np.abs(np.dot(x_patch, np.roll(y_patch, 1)) - np.dot(y_patch, np.roll(x_patch, 1)))
 
