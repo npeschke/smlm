@@ -1,6 +1,7 @@
 import pathlib as pl
 
 import hdbscan
+import sklearn.cluster as skl_cluster
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -46,6 +47,13 @@ def get_cluster_meta(clusterer: hdbscan.HDBSCAN):
     cluster_meta = cluster_meta.join(other=persistence, how="left")
 
     return cluster_meta
+
+
+def get_dbscan_clustering(orte):
+    clusterer = skl_cluster.DBSCAN(10)
+    clusterer.fit(orte[["x", "y"]])
+    orte = orte.assign(dbscan_cl_id=clusterer.labels_)
+    return orte, clusterer
 
 
 def get_hdbscan_clustering(orte):

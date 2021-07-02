@@ -15,7 +15,8 @@ class Orte(object):
         self.orte_df = analysis.load_orte(self.orte_path)#.sample(10000)
         self.orte_df, self.vor = analysis.analyze_orte(self.orte_df)
 
-        self.orte_df, self.clusterer, self.cluster_meta = cluster.get_hdbscan_clustering(self.orte_df)
+        self.orte_df, self.hdbscan_clusterer, self.cluster_meta = cluster.get_hdbscan_clustering(self.orte_df)
+        self.orte_df, self.dbscan_clusterer = cluster.get_dbscan_clustering(self.orte_df)
 
         cluster_density_df = self._get_cluster_density()
 

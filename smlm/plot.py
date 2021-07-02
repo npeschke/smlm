@@ -474,9 +474,10 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
     fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
 
 
-def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes,
-                         color_lims: tuple = None,
-                         cmap=smlm_config.SEQ_CMAP):
+def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
+                       color_lims: tuple = None,
+                       cluster_col: str = "dbscan_cl_id",
+                       cmap=smlm_config.SEQ_CMAP):
     # spat.voronoi_plot_2d
     # return _voronoi_plot_2d(
     #     vor, ax=ax,
@@ -484,7 +485,7 @@ def plot_voronoi_patches(orte_df: pd.DataFrame, ax: plt.Axes,
     #     point_size=.1,
     # )
 
-    vertices, diameters = _get_vertices(orte_df)
+    vertices, diameters = _get_vertices(orte_df, group_col=cluster_col)
 
     if color_lims is None:
         color_lims = (min(diameters), max(diameters))
@@ -521,7 +522,7 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
     coordinate_cols = ["x", "y"]
 
     for group_id, group in orte_df.groupby(group_col):
-        if group_id == -1:
+        if group_id == -1 or group.shape[0] < 3:
             continue
 
         hull = spat.ConvexHull(group[coordinate_cols])
@@ -530,7 +531,7 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
         vertices = group.iloc[hull.vertices][coordinate_cols].to_numpy()
         polygons.append(vertices)
 
-        cluster_diameters.append(np.sqrt(group.cluster_area.iloc[0] / np.pi) * 2)
+        cluster_diameters.append(np.sqrt(hull.volume / np.pi) * 2)
         cluster_areas.append(group.cluster_area.iloc[0])
 
     return polygons, cluster_diameters
@@ -545,12 +546,10 @@ if __name__ == '__main__':
     test_orte = Orte(localization_path)
 
     fig, t_ax = plt.subplots(figsize=(30, 30), dpi=200)
-    plot_voronoi_patches(test_orte.orte_df, t_ax)
+    plot_cluster_polys(test_orte.orte_df, t_ax)
     # lims = (0, 20000)
     # ax.autoscale_view()
     # t_ax.set_ylim(lims)
     # t_ax.set_xlim(lims)
     fig.tight_layout()
     fig.show()
-
-
