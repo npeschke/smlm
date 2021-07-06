@@ -491,11 +491,11 @@ def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
         color_lims = (min(diameters), max(diameters))
 
     norm = mpl_col.Normalize(*color_lims, clip=False)
-    area_colors = [cmap(norm(area)) for area in diameters]
+    diameter_colors = [cmap(norm(area)) for area in diameters]
 
     polygons = mpl_collect.PolyCollection(
         verts=vertices,
-        facecolors=area_colors,
+        facecolors=diameter_colors,
         edgecolors="face",
         linewidths=0,
     )

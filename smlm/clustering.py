@@ -50,7 +50,7 @@ def get_cluster_meta(clusterer: hdbscan.HDBSCAN):
 
 
 def get_dbscan_clustering(orte):
-    clusterer = skl_cluster.DBSCAN(10)
+    clusterer = skl_cluster.DBSCAN(11)
     clusterer.fit(orte[["x", "y"]])
     orte = orte.assign(dbscan_cl_id=clusterer.labels_)
     return orte, clusterer
