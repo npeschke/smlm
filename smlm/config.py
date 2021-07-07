@@ -39,6 +39,7 @@ STAGE_CMAP = sns.color_palette(n_colors=5)
 STAGE_COLORS = STAGE_CMAP.as_hex()
 
 SEQ_CMAP = cmasher.chroma
+CLUSTER_POLY_CMAP = cmasher.ember
 
 # Figure Parameters
 FIG_BASE_SIZE = 6.5

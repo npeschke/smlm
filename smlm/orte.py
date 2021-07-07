@@ -70,5 +70,5 @@ class Orte(object):
 
 if __name__ == '__main__':
     localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
-    test = Orte(localization_path, 90)
+    test = Orte(localization_path, 180)
 

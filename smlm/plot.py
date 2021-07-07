@@ -477,7 +477,8 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
 def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
                        color_lims: tuple = None,
                        cluster_col: str = "dbscan_cl_id",
-                       cmap=smlm_config.SEQ_CMAP):
+                       cmap=smlm_config.CLUSTER_POLY_CMAP,
+                       lims: tuple = None):
     # spat.voronoi_plot_2d
     # return _voronoi_plot_2d(
     #     vor, ax=ax,
@@ -500,13 +501,15 @@ def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
         linewidths=0,
     )
 
-    ax_lim = (np.floor(min([min(polygon.flatten()) for polygon in vertices])),
-              np.ceil(max([max(polygon.flatten()) for polygon in vertices])))
+    if lims is None:
+        lims = (np.floor(min([min(polygon.flatten()) for polygon in vertices])),
+                np.ceil(max([max(polygon.flatten()) for polygon in vertices])))
+        lims = (lims, lims)
 
     ax.add_collection(polygons)
 
-    ax.set_ylim(*ax_lim)
-    ax.set_xlim(*ax_lim)
+    ax.set_xlim(*lims[0])
+    ax.set_ylim(*lims[1])
 
     ax.figure.colorbar(mpl_cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax)
     ax.set_aspect("equal")
