@@ -327,8 +327,12 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
                            plot_col: str = "log_density", stage_method: str = "manual_5_stage",
                            stages: tuple = None,
                            stat: str = "density",
-                           min_density: float = -4, max_density: float = 0,
+                           density_lims: tuple = None,
                            **kwargs):
+
+    if density_lims is None:
+        density_lims = (data[plot_col].min(), data[plot_col].max())
+
     # Background
     bg_plot_data = data.loc[data.file != fg_filename]
 
@@ -340,7 +344,7 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
             ax = _plot_cell_density_hist(data=bg_plot_data, plot_col=plot_col,
                                          file=file, stage=stage, ax=ax,
                                          color=_get_tint(smlm_config.STAGE_COLORS[stage - 1]),
-                                         max_density=max_density, min_density=min_density,
+                                         density_lims=density_lims,
                                          stage_method=stage_method, stat=stat,
                                          **kwargs)
 
@@ -352,7 +356,7 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
     ax = _plot_cell_density_hist(data=fg_plot_data, plot_col=plot_col,
                                  file=fg_filename, stage=fg_stage, ax=ax,
                                  color=smlm_config.STAGE_COLORS[fg_stage - 1],
-                                 max_density=max_density, min_density=min_density,
+                                 density_lims=density_lims,
                                  stage_method=stage_method, stat=stat,
                                  linewidth=4,
                                  **kwargs)
@@ -362,13 +366,13 @@ def plot_cell_density_hist(data: pd.DataFrame, fg_filename: str,
 
 def _plot_cell_density_hist(data: pd.DataFrame, plot_col: str, file: str, stage: int, ax: plt.Axes,
                             color: str,
-                            max_density: float, min_density: float,
+                            density_lims: tuple,
                             stage_method: str, stat: str, **kwargs):
     # data[["file", "manual_5_stage"]].tail()
     ax = sns.histplot(x=plot_col,
                       data=data.loc[(data[stage_method] == stage) & (data["file"] == file)],
                       color=color,
-                      binrange=(min_density, max_density),
+                      binrange=density_lims,
                       fill=False, element="step", stat=stat, common_norm=False, common_bins=False,
                       ax=ax, **kwargs)
     return ax
@@ -394,7 +398,7 @@ def _get_stages(data: pd.DataFrame, stage_method: str):
     return tuple(stages)
 
 
-def plot_cell_vis(data: pd.DataFrame, filename: str, plot_col: str, ax: plt.Axes, density_lims: tuple, log_density_threshold: float = -2):
+def plot_cell_vis(data: pd.DataFrame, filename: str, plot_col: str, ax: plt.Axes, density_lims: tuple, threshold: float = -2):
     plot_data = data.loc[data.file == filename]
 
     with sns.axes_style("white"):
@@ -408,8 +412,8 @@ def plot_cell_vis(data: pd.DataFrame, filename: str, plot_col: str, ax: plt.Axes
         # sns.kdeplot(x="x", y="y", data=plot_data.loc[plot_data.log_density < log_density_threshold],
         #             fill=True)
 
-        plot_scatter_localizations(plot_data.loc[plot_data.log_density < log_density_threshold], ax, plot_col, density_lims=density_lims, alpha=0.2)
-        plot_scatter_localizations(plot_data.loc[plot_data.log_density >= log_density_threshold], ax, plot_col, density_lims=density_lims, alpha=1)
+        plot_scatter_localizations(plot_data.loc[plot_data[plot_col] < threshold], ax, plot_col, density_lims=density_lims, alpha=0.2)
+        plot_scatter_localizations(plot_data.loc[plot_data[plot_col] >= threshold], ax, plot_col, density_lims=density_lims, alpha=1)
 
         ax.set_frame_on(False)
         ax.set_xticks([])
@@ -445,8 +449,16 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
                              (e.g. "log_norm_density")
                  "method":   name of the column in data to group by
 
+                 "vis_density_lims":  tuple of the (lower, upper) limit
+                                      of the colormap in the localizations
+
                  "hist_density_lims": tuple of the (lower, upper) limit
-                                      of the
+                                      of the values in plot_col to show
+                                      on the histogram
+
+
+                 "threshold": Localizations with a value in plot_col lower
+                              than threshold will be semitransparent
     :param stages: tuple for specifying stages to plot in the background
                    default: None -> distributions of all nuclei are plotted
     :param result_dir: pl.Path of the result directory
@@ -456,10 +468,11 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
     method_col = plot_kwargs["method"]
     hist_density_lims = plot_kwargs["hist_density_lims"]
     vis_density_lims = plot_kwargs["vis_density_lims"]
+    threshold = plot_kwargs["threshold"]
 
     fig, ax = plt.subplots(ncols=2, figsize=(50, 25), dpi=200)
 
-    plot_cell_vis(data=data, filename=filename, ax=ax[0], density_lims=vis_density_lims, plot_col=plot_col)
+    plot_cell_vis(data=data, filename=filename, plot_col=plot_col, ax=ax[0], density_lims=vis_density_lims, threshold=threshold)
     plot_cell_density_hist(data=data, fg_filename=filename, ax=ax[1],
                            stage_method=method_col,
                            density_lims=hist_density_lims,
@@ -546,13 +559,13 @@ if __name__ == '__main__':
 
     localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
 
-    test_orte = Orte(localization_path)
-
-    fig, t_ax = plt.subplots(figsize=(30, 30), dpi=200)
-    plot_cluster_polys(test_orte.orte_df, t_ax)
-    # lims = (0, 20000)
-    # ax.autoscale_view()
-    # t_ax.set_ylim(lims)
-    # t_ax.set_xlim(lims)
-    fig.tight_layout()
-    fig.show()
+    # test_orte = Orte(localization_path)
+    #
+    # fig, t_ax = plt.subplots(figsize=(30, 30), dpi=200)
+    # plot_cluster_polys(test_orte.orte_df, t_ax)
+    # # lims = (0, 20000)
+    # # ax.autoscale_view()
+    # # t_ax.set_ylim(lims)
+    # # t_ax.set_xlim(lims)
+    # fig.tight_layout()
+    # fig.show()
