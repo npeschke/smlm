@@ -2,7 +2,6 @@ import pathlib as pl
 
 import numpy as np
 import pandas as pd
-import scipy.spatial as spat
 
 from smlm.smlm import analysis as analysis
 from smlm.smlm import clustering as cluster
@@ -10,38 +9,34 @@ from smlm.smlm import clustering as cluster
 
 class Orte(object):
     def __init__(self, orte_path: pl.Path, rotation_angle: float = None):
+        self._hdbscan_prefix = "hdbscan"
+        self._dbscan_prefix = "dbscan"
+        self.hdbscan_cl_id_col = f"{self._hdbscan_prefix}_cluster_id"
+        self.dbscan_cl_id_col = f"{self._dbscan_prefix}_cluster_id"
+
         self.orte_path = orte_path
         self._rotation_angle = rotation_angle
 
-        # TODO Remove debug sample
-        self.orte_df = analysis.load_orte(self.orte_path)#.sample(10000)
+        self.orte_df = analysis.load_orte(self.orte_path)
         self._rotate_orte()
         self.orte_df, self.vor = analysis.analyze_orte(self.orte_df)
 
-        self.orte_df, self.hdbscan_clusterer, self.cluster_meta = cluster.get_hdbscan_clustering(self.orte_df)
-        self.orte_df, self.dbscan_clusterer = cluster.get_dbscan_clustering(self.orte_df)
+        self.orte_df, self.hdbscan_clusterer, self.cluster_meta, self.hdbscan_polys = cluster.get_hdbscan_clustering(self.orte_df,
+                                                                                                                     self._hdbscan_prefix,
+                                                                                                                     self.hdbscan_cl_id_col)
+        self.orte_df, self.dbscan_clusterer, self.dbscan_polys = cluster.get_dbscan_clustering(self.orte_df,
+                                                                                               self._dbscan_prefix,
+                                                                                               self.dbscan_cl_id_col)
 
-        cluster_density_df = self._get_cluster_density()
-
-        self.cluster_meta = self.cluster_meta.join(cluster_density_df.set_index("cluster_id"), how="left")
-        # self.orte_df = self.orte_df.set_index("cluster_id").join(cluster_density_df.set_index("cluster_id"), how="left")
-        self.orte_df = self.orte_df.merge(cluster_density_df, how="left", on="cluster_id")
+        # cluster_density_df = cluster.get_cluster_density(self.orte_df, self._hdbscan_prefix, self._hdbscan_cl_id_col)
+        #
+        # self.cluster_meta = self.cluster_meta.join(cluster_density_df.set_index("cluster_id"), how="left")
+        # self.orte_df = self.orte_df.merge(cluster_density_df, how="left", on="cluster_id")
 
     def get_named_cluster_meta(self):
         named_cluster_meta = self.cluster_meta.assign(file=self.orte_path.name)
         named_cluster_meta = named_cluster_meta.reset_index().rename(columns={"index": "cluster_id"})
         return named_cluster_meta
-
-    def _get_cluster_density(self):
-        # cluster_density = pd.DataFrame(columns=["cluster_id", "cluster_area", "cluster_density"])
-        cluster_density = []
-        for cluster_id, cluster_df in self.orte_df.groupby("cluster_id"):
-            hull = spat.ConvexHull(cluster_df[["x", "y"]])
-            # spat.convex_hull_plot_2d(hull)
-
-            cluster_density.append([cluster_id, hull.volume, len(cluster_df) / hull.volume])
-
-        return pd.DataFrame(cluster_density, columns=["cluster_id", "cluster_area", "cluster_density"])
 
     def _rotate_orte(self):
         if self._rotation_angle is not None:
