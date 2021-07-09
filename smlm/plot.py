@@ -571,6 +571,34 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
     return polygons, cluster_diameters
 
 
+def plot_cluster_diameters(orte: Orte, stage: int, cluster_prefix: str, diameter_lims: tuple, result_dir: pl.Path):
+    fig, ax = plt.subplots()
+    if cluster_prefix == "dbscan":
+        groups = orte.orte_df.groupby(orte.dbscan_cl_id_col)
+    elif cluster_prefix == "hdbscan":
+        groups = orte.orte_df.groupby(orte.hdbscan_cl_id_col)
+    else:
+        raise NotImplementedError
+
+    plot_data = groups.median()
+    # plot_data = orte.orte_df.groupby(f"{cluster_prefix}_cluster_id").median()
+    sns.histplot(x=f"{cluster_prefix}_cluster_diameter", data=plot_data,
+                 binrange=(0, 700),
+                 binwidth=20,
+                 color=smlm_config.STAGE_COLORS[stage - 1],
+                 log_scale=(False, True),
+                 ax=ax)
+
+    ax.set_xlabel("Equivalent Circle Diameter [nm]")
+    ax.set_ylabel("Counts")
+    ax.set_title(orte.orte_path.name)
+
+    fig.suptitle(f"Cluster Diameters | Stage {stage}")
+    fig.tight_layout()
+
+    fig.savefig(result_dir.joinpath(f"stage_{stage}_{orte.orte_path.name}_cluster_diameters.svg"))
+
+
 if __name__ == '__main__':
     # _get_tint(smlm_config.STAGE_COLORS[0])
     from smlm.smlm.orte import Orte
