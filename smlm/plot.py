@@ -591,6 +591,7 @@ def plot_cluster_diameters(orte: Orte, stage: int, cluster_prefix: str, diameter
 
     ax.set_xlabel("Equivalent Circle Diameter [nm]")
     ax.set_ylabel("Counts")
+    ax.set_ylim(None, 10000)
     ax.set_title(orte.orte_path.name)
 
     fig.suptitle(f"Cluster Diameters | Stage {stage}")
