@@ -13,6 +13,7 @@ import scipy.spatial as spat
 import seaborn as sns
 
 from smlm.smlm import config as smlm_config
+from smlm.smlm.orte import Orte
 
 
 def get_n_stages(method_name: str, stage_df: pd.DataFrame):
@@ -487,9 +488,11 @@ def plot_cell_vis_density(data: pd.DataFrame, filename: str, plot_kwargs: dict, 
     fig.savefig(result_dir.joinpath(f"stage_{stage}_{filename.split('.')[0]}_vis_{plot_col}.png"))
 
 
-def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
+def plot_cluster_polys(orte: Orte,
+                       ax: plt.Axes,
                        color_lims: tuple = None,
-                       cluster_col: str = "dbscan_cl_id",
+                       cluster_prefix: str = "dbscan",
+                       plot_col_suffix: str = "cluster_diameter",
                        cmap=smlm_config.CLUSTER_POLY_CMAP,
                        lims: tuple = None):
     # spat.voronoi_plot_2d
@@ -499,7 +502,22 @@ def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
     #     point_size=.1,
     # )
 
-    vertices, diameters = _get_vertices(orte_df, group_col=cluster_col)
+    # vertices, diameters = _get_vertices(orte_df, group_col=cluster_col)
+
+    if cluster_prefix == "hdbscan":
+        vertices = orte.hdbscan_vertices
+        groups = orte.orte_df.groupby(orte.hdbscan_cl_id_col)
+
+    elif cluster_prefix == "dbscan":
+        vertices = orte.dbscan_vertices
+        groups = orte.orte_df.groupby(orte.dbscan_cl_id_col)
+
+    else:
+        raise NotImplementedError
+
+    diameter_col = "_".join([cluster_prefix, plot_col_suffix])
+
+    diameters = [groups.get_group(cluster_id)[diameter_col].iloc[0] for cluster_id in vertices[0]]
 
     if color_lims is None:
         color_lims = (min(diameters), max(diameters))
@@ -508,7 +526,7 @@ def plot_cluster_polys(orte_df: pd.DataFrame, ax: plt.Axes,
     diameter_colors = [cmap(norm(area)) for area in diameters]
 
     polygons = mpl_collect.PolyCollection(
-        verts=vertices,
+        verts=vertices[1],
         facecolors=diameter_colors,
         edgecolors="face",
         linewidths=0,

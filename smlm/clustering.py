@@ -80,11 +80,11 @@ def get_hdbscan_clustering(orte, df_prefix: str, cluster_id_col: str):
 def get_cluster_density(orte: pd.DataFrame, df_prefix: str, cluster_id_col: str):
     # cluster_density = pd.DataFrame(columns=["cluster_id", "cluster_area", "cluster_density"])
     cluster_density = []
-    polygons = []
+    vertices = [[], []]
     coordinate_cols = ["x", "y"]
 
     for cluster_id, cluster_df in orte.groupby(cluster_id_col):
-        if cluster_id == -1 or cluster_df.shape[0] < 3:
+        if cluster_id == -1 or len(cluster_df) < 3:
             continue
         hull = spat.ConvexHull(cluster_df[coordinate_cols])
         # spat.convex_hull_plot_2d(hull)
@@ -95,17 +95,17 @@ def get_cluster_density(orte: pd.DataFrame, df_prefix: str, cluster_id_col: str)
             len(cluster_df) / hull.volume,
             np.sqrt(hull.volume / np.pi) * 2
         ])
-        vertices = cluster_df.iloc[hull.vertices][coordinate_cols].to_numpy()
-        polygons.append((cluster_id, vertices))
+        vertices[0].append(cluster_id)
+        vertices[1].append(cluster_df.iloc[hull.vertices][coordinate_cols].to_numpy())
 
     density_df = pd.DataFrame(cluster_density, columns=[cluster_id_col,
                                                         f"{df_prefix}_cluster_area",
                                                         f"{df_prefix}_cluster_density",
                                                         f"{df_prefix}_cluster_diameter"])
 
-    orte = orte.merge(density_df, on=cluster_id_col)
+    orte = orte.merge(density_df, on=cluster_id_col, how="left")
 
-    return orte
+    return orte, vertices
 
 
 def run(orte_path: pl.Path):
