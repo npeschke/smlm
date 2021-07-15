@@ -586,13 +586,13 @@ def plot_cluster_diameters_single_nuc(orte: Orte, stage: int, cluster_prefix: st
                  # binrange=(0, 1300),
                  # binwidth=100,
                  color=smlm_config.STAGE_COLORS[stage - 1],
-                 stat="count",
+                 # stat="count",
                  # log_scale=(False, True),
                  # log_scale=(True, False),
                  ax=ax)
 
     ax.set_xlabel("Equivalent Circle Diameter [nm]")
-    ax.set_ylabel("Counts")
+    # ax.set_ylabel("Counts")
     # ax.set_ylim(None, 10000)
     # ax.set_title(orte.orte_path.name)
 
