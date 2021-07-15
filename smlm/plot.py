@@ -571,8 +571,8 @@ def _get_vertices(orte_df: pd.DataFrame, group_col: str = "cluster_id") -> tuple
     return polygons, cluster_diameters
 
 
-def plot_cluster_diameters(orte: Orte, stage: int, cluster_prefix: str, diameter_lims: tuple, result_dir: pl.Path):
-    fig, ax = plt.subplots()
+def plot_cluster_diameters_single_nuc(orte: Orte, stage: int, cluster_prefix: str, diameter_lims: tuple, result_dir: pl.Path, ax: plt.Axes):
+    # fig, ax = plt.subplots()
     if cluster_prefix == "dbscan":
         groups = orte.orte_df.groupby(orte.dbscan_cl_id_col)
     elif cluster_prefix == "hdbscan":
@@ -582,23 +582,39 @@ def plot_cluster_diameters(orte: Orte, stage: int, cluster_prefix: str, diameter
 
     plot_data = groups.median()
     # plot_data = orte.orte_df.groupby(f"{cluster_prefix}_cluster_id").median()
-    sns.histplot(x=f"{cluster_prefix}_cluster_diameter", data=plot_data,
-                 binrange=(0, 700),
-                 binwidth=20,
+    sns.ecdfplot(x=f"{cluster_prefix}_cluster_diameter", data=plot_data,
+                 # binrange=(0, 1300),
+                 # binwidth=100,
                  color=smlm_config.STAGE_COLORS[stage - 1],
-                 log_scale=(False, True),
+                 stat="count",
+                 # log_scale=(False, True),
+                 # log_scale=(True, False),
                  ax=ax)
 
     ax.set_xlabel("Equivalent Circle Diameter [nm]")
     ax.set_ylabel("Counts")
-    ax.set_ylim(None, 10000)
-    ax.set_title(orte.orte_path.name)
+    # ax.set_ylim(None, 10000)
+    # ax.set_title(orte.orte_path.name)
 
-    fig.suptitle(f"Cluster Diameters | Stage {stage}")
-    fig.tight_layout()
+    # fig.suptitle(f"Cluster Diameters | Stage {stage}")
+    # fig.tight_layout()
+    #
+    # fig.savefig(result_dir.joinpath(f"stage_{stage}_{orte.orte_path.name}_cluster_diameters.svg"))
 
-    fig.savefig(result_dir.joinpath(f"stage_{stage}_{orte.orte_path.name}_cluster_diameters.svg"))
 
+def plot_cluster_diameters(cluster_df: pd.DataFrame, cluster_prefix: str, stage_method: str, result_dir: pl.Path):
+    fig, ax = plt.subplots()
+    cluster_df = cluster_df.astype({stage_method: str})
+    sns.histplot(x=f"{cluster_prefix}_cluster_diameter", data=cluster_df,
+                 # binwidth=100,
+                 hue=stage_method,
+                 hue_order=[str(i) for i in range(1, get_n_stages(stage_method, cluster_df) + 1)],
+                 fill=False, element="step", common_norm=False, common_bins=False,
+                 stat="count",
+                 log_scale=(True, True),
+                 ax=ax)
+
+    plt.show()
 
 if __name__ == '__main__':
     # _get_tint(smlm_config.STAGE_COLORS[0])

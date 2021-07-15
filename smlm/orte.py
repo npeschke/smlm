@@ -20,21 +20,34 @@ class Orte(object):
         self._rotate_orte()
         self.orte_df, self.vor = analysis.analyze_orte(self.orte_df)
 
-        self.orte_df, self.hdbscan_clusterer, self.cluster_meta, self.hdbscan_vertices = cluster.get_hdbscan_clustering(self.orte_df,
-                                                                                                                        self._hdbscan_prefix,
-                                                                                                                        self.hdbscan_cl_id_col)
-        self.orte_df, self.dbscan_clusterer, self.dbscan_vertices = cluster.get_dbscan_clustering(self.orte_df,
-                                                                                                  self._dbscan_prefix,
-                                                                                                  self.dbscan_cl_id_col)
+        self.orte_df, self.hdbscan_clusterer, self.hdbscan_cluster_meta, self.hdbscan_vertices = cluster.get_hdbscan_clustering(self.orte_df,
+                                                                                                                                self._hdbscan_prefix,
+                                                                                                                                self.hdbscan_cl_id_col)
+        self.orte_df, self.dbscan_clusterer, self.dbscan_cluster_meta, self.dbscan_vertices = cluster.get_dbscan_clustering(self.orte_df,
+                                                                                                                            self._dbscan_prefix,
+                                                                                                                            self.dbscan_cl_id_col)
 
         # cluster_density_df = cluster.get_cluster_density(self.orte_df, self._hdbscan_prefix, self._hdbscan_cl_id_col)
         #
-        # self.cluster_meta = self.cluster_meta.join(cluster_density_df.set_index("cluster_id"), how="left")
+        # self.hdbscan_cluster_meta = self.hdbscan_cluster_meta.join(cluster_density_df.set_index("cluster_id"), how="left")
         # self.orte_df = self.orte_df.merge(cluster_density_df, how="left", on="cluster_id")
 
-    def get_named_cluster_meta(self):
-        named_cluster_meta = self.cluster_meta.assign(file=self.orte_path.name)
-        named_cluster_meta = named_cluster_meta.reset_index().rename(columns={"index": "cluster_id"})
+    def get_named_cluster_meta(self, cluster_method: str = "hdbscan"):
+
+        if cluster_method == "dbscan":
+            named_cluster_meta = self.dbscan_cluster_meta
+            col_name = self.dbscan_cl_id_col
+
+        elif cluster_method == "hdbscan":
+            named_cluster_meta = self.hdbscan_cluster_meta
+            col_name = self.hdbscan_cl_id_col
+
+        else:
+            raise NotImplementedError
+
+        named_cluster_meta = named_cluster_meta.assign(file=self.orte_path.name)
+        named_cluster_meta = named_cluster_meta.reset_index().rename(columns={"index": col_name})
+
         return named_cluster_meta
 
     def _rotate_orte(self):
@@ -65,3 +78,5 @@ class Orte(object):
 if __name__ == '__main__':
     localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
     test = Orte(localization_path, 180)
+
+    print("completed")

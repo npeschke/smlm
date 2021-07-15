@@ -15,7 +15,7 @@ def get_cluster_sizes(clusterer: hdbscan.HDBSCAN):
     """
     Counts the number of localizations in all clusters
 
-    :param clusterer: the HDBSCAN object after fitting
+    :param clusterer: the (H)DBSCAN object after fitting
     :return: dict with {cluster_id: size}
     """
 
@@ -30,13 +30,13 @@ def get_cluster_sizes(clusterer: hdbscan.HDBSCAN):
     return cluster_size
 
 
-def get_cluster_meta(clusterer: hdbscan.HDBSCAN, df_prefix: str):
+def get_cluster_meta(clusterer, df_prefix: str):
     """
     Finds cluster metadata:
         - cluster size in number of localizations in cluster
         - persistence of the cluster as detailed in the HDBSCAN API
 
-    :param clusterer: the HDBSCAN object after fitting
+    :param clusterer: (H)DBSCAN object after fitting
     :param df_prefix: prefix for the dataframe columns
     :return: pd.Dataframe with index cluster_id and size and persistence columns
     """
@@ -44,10 +44,9 @@ def get_cluster_meta(clusterer: hdbscan.HDBSCAN, df_prefix: str):
     cluster_meta = pd.DataFrame.from_dict(get_cluster_sizes(clusterer), orient="index")
     cluster_meta.columns = [f"{df_prefix}_cluster_size"]
 
-    # persistence = pd.DataFrame(clusterer.cluster_persistence_, columns=["cluster_persistence"]).reset_index().rename(columns={"index": "cluster_id"})
-    persistence = pd.DataFrame(clusterer.cluster_persistence_, columns=[f"{df_prefix}_cluster_persistence"])
-
-    cluster_meta = cluster_meta.join(other=persistence, how="left")
+    if type(clusterer) is hdbscan.HDBSCAN:
+        persistence = pd.DataFrame(clusterer.cluster_persistence_, columns=[f"{df_prefix}_cluster_persistence"])
+        cluster_meta = cluster_meta.join(other=persistence, how="left")
 
     return cluster_meta
 
@@ -57,8 +56,15 @@ def get_dbscan_clustering(orte: pd.DataFrame, df_prefix: str, cluster_id_col: st
     clusterer.fit(orte[["x", "y"]])
 
     orte.insert(11, cluster_id_col, clusterer.labels_)
-    orte, polygons = get_cluster_density(orte, df_prefix, cluster_id_col)
-    return orte, clusterer, polygons
+
+    cluster_meta = get_cluster_meta(clusterer, df_prefix=df_prefix)
+    orte = orte.join(other=cluster_meta, on=cluster_id_col)
+
+    orte, polygons, density_df = get_cluster_density(orte, df_prefix, cluster_id_col)
+
+    cluster_meta = cluster_meta.join(density_df, how="left")
+
+    return orte, clusterer, cluster_meta, polygons
 
 
 def get_hdbscan_clustering(orte, df_prefix: str, cluster_id_col: str):
@@ -71,8 +77,9 @@ def get_hdbscan_clustering(orte, df_prefix: str, cluster_id_col: str):
     cluster_meta = get_cluster_meta(clusterer, df_prefix)
     orte = orte.join(other=cluster_meta, on=cluster_id_col)
 
-    orte, polygons = get_cluster_density(orte, df_prefix, cluster_id_col)
+    orte, polygons, density_df = get_cluster_density(orte, df_prefix, cluster_id_col)
     # orte = orte.join(other=density_df, on=cluster_id_col)
+    cluster_meta = cluster_meta.join(density_df, how="left")
 
     return orte, clusterer, cluster_meta, polygons
 
@@ -104,8 +111,9 @@ def get_cluster_density(orte: pd.DataFrame, df_prefix: str, cluster_id_col: str)
                                                         f"{df_prefix}_cluster_diameter"])
 
     orte = orte.merge(density_df, on=cluster_id_col, how="left")
+    density_df.set_index(cluster_id_col)
 
-    return orte, vertices
+    return orte, vertices, density_df
 
 
 def run(orte_path: pl.Path):
