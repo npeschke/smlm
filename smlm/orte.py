@@ -7,16 +7,21 @@ from smlm.smlm import clustering as cluster
 
 
 class Orte(object):
-    def __init__(self, orte_path: pl.Path, rotation_angle: float = None):
+    def __init__(self, orte_path: pl.Path, rotation_angle: float = None, n_samples: int = None):
         self._hdbscan_prefix = "hdbscan"
         self._dbscan_prefix = "dbscan"
         self.hdbscan_cl_id_col = f"{self._hdbscan_prefix}_cluster_id"
         self.dbscan_cl_id_col = f"{self._dbscan_prefix}_cluster_id"
 
         self.orte_path = orte_path
+
+        self._n_samples = n_samples
         self._rotation_angle = rotation_angle
 
         self.orte_df = analysis.load_orte(self.orte_path)
+        if self._n_samples is not None:
+            self.orte_df = self.orte_df.sample(self._n_samples)
+
         self._rotate_orte()
         self.orte_df, self.vor = analysis.analyze_orte(self.orte_df)
 
@@ -77,6 +82,6 @@ class Orte(object):
 
 if __name__ == '__main__':
     localization_path = pl.Path("../../data/cut_cells/H2B_mCherry/2020_Jun_30_Stauro_LCI_SMLM/1_0/merge_filter/cell_5_thre_1_0_merge_filter.csv")
-    test = Orte(localization_path, 180)
+    test = Orte(localization_path, 180, 26500)
 
     print("completed")

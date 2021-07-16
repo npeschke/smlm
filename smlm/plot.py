@@ -605,16 +605,18 @@ def plot_cluster_diameters_single_nuc(orte: Orte, stage: int, cluster_prefix: st
 def plot_cluster_diameters(cluster_df: pd.DataFrame, cluster_prefix: str, stage_method: str, result_dir: pl.Path):
     fig, ax = plt.subplots()
     cluster_df = cluster_df.astype({stage_method: str})
-    sns.histplot(x=f"{cluster_prefix}_cluster_diameter", data=cluster_df,
+    sns.ecdfplot(x=f"{cluster_prefix}_cluster_diameter", data=cluster_df,
                  # binwidth=100,
                  hue=stage_method,
                  hue_order=[str(i) for i in range(1, get_n_stages(stage_method, cluster_df) + 1)],
-                 fill=False, element="step", common_norm=False, common_bins=False,
-                 stat="count",
-                 log_scale=(True, True),
+                 # fill=False, element="step", common_norm=False, common_bins=False,
+                 # stat="count",
+                 # log_scale=(True, False),
                  ax=ax)
+    ax.set_xlim(0, 100)
 
-    plt.show()
+    # plt.show()
+    fig.savefig(result_dir.joinpath(f"{stage_method}_{cluster_prefix}_cluster_diameter_dist.svg"))
 
 if __name__ == '__main__':
     # _get_tint(smlm_config.STAGE_COLORS[0])

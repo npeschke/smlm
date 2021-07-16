@@ -1,22 +1,10 @@
 import collections as coll
 import pathlib as pl
 
-import bokeh.models as bmods
-import bokeh.plotting as bkplt
-import bokeh.transform as bktansf
 import numpy as np
 import pandas as pd
 import scipy.io as spio
 import scipy.spatial as spat
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-import multiprocessing as mp
-
-# vor = spat.Voronoi(coordinates)
-#
-# fig = spat.voronoi_plot_2d(vor)
 
 
 def polygon_density(x, y):
@@ -114,7 +102,8 @@ def get_voronoi_df(orte_file_path: pl.Path):
         df = df.assign(is_control=False)
 
     # df = df.assign(density=lambda x: polygon_density(x.x_patch, x.y_patch))
-    df["area"] = df.apply(lambda x: 0.5 * np.abs(np.dot(x["x_patch"], np.roll(x["y_patch"], 1)) - np.dot(x["y_patch"], np.roll(x["x_patch"], 1))), axis=1)
+    df["area"] = df.apply(lambda x: 0.5 * np.abs(np.dot(x["x_patch"], np.roll(x["y_patch"], 1)) -
+                                                 np.dot(x["y_patch"], np.roll(x["x_patch"], 1))), axis=1)
     df["density"] = 1 / df["area"]
     return df
 
@@ -194,7 +183,7 @@ if __name__ == '__main__':
     # pairplot.fig.tight_layout()
     # pairplot.fig.show()
 
-    density_comp_fig, density_comp_ax = plt.subplots()
+    # density_comp_fig, density_comp_ax = plt.subplots()
     
 
 
