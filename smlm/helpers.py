@@ -1,4 +1,5 @@
 import pandas as pd
+import pathlib as pl
 
 
 def get_tissue_label(s: pd.Series):
@@ -35,3 +36,8 @@ def merge_localizations_stages(data: pd.DataFrame, stages_df: pd.DataFrame, assu
             merged = merged.loc[~merged[col].isna()]
 
     return merged
+
+
+def assure_dir(directory: pl.Path):
+    if not directory.exists():
+        directory.mkdir(parents=True)

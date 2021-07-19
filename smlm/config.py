@@ -2,10 +2,10 @@ import seaborn as sns
 import matplotlib as mpl
 import cmasher
 
-sns.set_style("darkgrid")
-sns.set_theme(font="sans-serif")
+# sns.set_style("darkgrid")
+# sns.set_theme(font="sans-serif")
+# mpl.rcParams["font.size"] = 14.0
 
-mpl.rcParams["font.size"] = 14.0
 
 # COLORS
 # SNS_BLUE = (0.12156862745098039, 0.4666666666666667, 0.7058823529411765)
