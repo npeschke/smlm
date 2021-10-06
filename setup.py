@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='smlm_publication',
-    version='0.9.1',
+    version='0.9.2',
     packages=['smlm', 'smlm.styles'],
     url='https://github.com/npeschke/smlm',
     license='BSD-3-Clause',

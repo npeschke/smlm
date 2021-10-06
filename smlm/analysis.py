@@ -4,10 +4,10 @@ import numpy as np
 
 # import multiprocessing as mp
 
-import smlm.smlm.voronoi as vor
-import smlm.smlm.polar as pol
-# from . import voronoi as vor
-# from . import polar as pol
+# import smlm.voronoi as vor
+# import smlm.polar as pol
+from . import voronoi as vor
+from . import polar as pol
 
 
 def get_result_dir(orte_path):

@@ -12,8 +12,8 @@ import pandas as pd
 import scipy.spatial as spat
 import seaborn as sns
 
-from smlm.smlm import config as smlm_config
-from smlm.smlm.orte import Orte
+from . import config as smlm_config
+from .orte import Orte
 
 
 def get_n_stages(method_name: str, stage_df: pd.DataFrame):

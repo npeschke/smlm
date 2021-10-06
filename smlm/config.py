@@ -1,5 +1,4 @@
 import seaborn as sns
-import matplotlib as mpl
 import cmasher
 
 # sns.set_style("darkgrid")

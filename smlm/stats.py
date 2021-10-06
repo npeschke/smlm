@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as scs
 
-import smlm.smlm.helpers as helpers
+from . import helpers
 
 
 def wilcoxon_rank_sums(comparison_column: str, n_stages: int, stage_method: str, data: pd.DataFrame):
