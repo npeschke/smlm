@@ -4,7 +4,7 @@
 - The package is developed on Ubuntu 20.04 LTS Kernel 5.13.0-7614-generic
 - A working Python 3 installation is required
 - A conda environment is recommended
-- Dependencies of the package can be found in the `requirements.txt` file
+- Dependencies of the package can be found in the `setup.py` file
 
 ## Installation Guide for Linux
 1. open a Terminal 
